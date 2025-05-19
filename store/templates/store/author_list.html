@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Bookstore - Authors{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <h1 class="text-3xl font-bold text-gray-800">Authors</h1>
+    {% if user.is_authenticated %}
+    <a href="{% url 'author_create' %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-300">
+        Add New Author
+    </a>
+    {% endif %}
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for author in authors %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
+        <div class="p-6">
+            <h2 class="text-xl font-semibold mb-2">{{ author.name }}</h2>
+            <p class="text-gray-700 mb-4">{{ author.bio|truncatewords:30 }}</p>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-600">{{ author.book_set.count }} books</span>
+                <a href="{% url 'author_detail' author.id %}" class="text-indigo-600 hover:text-indigo-800">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-3 text-center py-12">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+        <p class="text-gray-500 text-lg">No authors found.</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% if is_paginated %}
+<div class="mt-8 flex justify-center">
+    <div class="flex space-x-1">
+        {% if page_obj.has_previous %}
+        <a href="?page=1" class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">First</a>
+        <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Previous</a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="px-4 py-2 bg-indigo-600 text-white border border-indigo-600 rounded-md">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}" class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Next</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}" class="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Last</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

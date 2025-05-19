@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Bookstore{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-indigo-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'home' %}" class="text-2xl font-bold">Bookstore</a>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="{% url 'book_list' %}" class="hover:text-indigo-200">Books</a>
+                        <a href="{% url 'author_list' %}" class="hover:text-indigo-200">Authors</a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'customer_list' %}" class="hover:text-indigo-200">Customers</a>
+                            <a href="{% url 'order_list' %}" class="hover:text-indigo-200">Orders</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div x-data="{ open: false }" class="relative">
+                        <form action="{% url 'search' %}" method="get" class="flex">
+                            <input type="text" name="q" placeholder="Search books..." class="px-3 py-1 rounded-l text-black">
+                            <button type="submit" class="bg-indigo-700 px-3 py-1 rounded-r hover:bg-indigo-800">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                    {% if user.is_authenticated %}
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = !open" class="flex items-center space-x-1 focus:outline-none">
+                                <span>{{ user.username }}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                            <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 text-gray-700 z-10">
+                                <a href="#" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
+                                <a href="{% url 'admin:index' %}" class="block px-4 py-2 hover:bg-gray-100">Admin</a>
+                                <a href="#" class="block px-4 py-2 hover:bg-gray-100">Logout</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="#" class="hover:text-indigo-200">Login</a>
+                    {% endif %}
+                    <div class="md:hidden" x-data="{ open: false }">
+                        <button @click="open = !open" class="focus:outline-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
+                        <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 text-gray-700 z-10">
+                            <a href="{% url 'book_list' %}" class="block px-4 py-2 hover:bg-gray-100">Books</a>
+                            <a href="{% url 'author_list' %}" class="block px-4 py-2 hover:bg-gray-100">Authors</a>
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'customer_list' %}" class="block px-4 py-2 hover:bg-gray-100">Customers</a>
+                                <a href="{% url 'order_list' %}" class="block px-4 py-2 hover:bg-gray-100">Orders</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mx-auto px-4 mt-4">
+        {% for message in messages %}
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" 
+                class="bg-{{ message.tags }}-100 border border-{{ message.tags }}-400 text-{{ message.tags }}-700 px-4 py-3 rounded relative mb-4"
+                role="alert">
+                <span class="block sm:inline">{{ message }}</span>
+                <button @click="show = false" class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                    <svg class="fill-current h-6 w-6 text-{{ message.tags }}-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <title>Close</title>
+                        <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                    </svg>
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-auto">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="mb-4 md:mb-0">
+                    <h3 class="text-xl font-bold mb-2">Bookstore</h3>
+                    <p class="text-gray-400">Your one-stop shop for all your reading needs.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-2">Quick Links</h4>
+                    <ul class="space-y-1">
+                        <li><a href="{% url 'home' %}" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li><a href="{% url 'book_list' %}" class="text-gray-400 hover:text-white">Books</a></li>
+                        <li><a href="{% url 'author_list' %}" class="text-gray-400 hover:text-white">Authors</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-8 pt-4 border-t border-gray-700 text-center text-gray-400">
+                <p>&copy; {% now "Y" %} Bookstore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

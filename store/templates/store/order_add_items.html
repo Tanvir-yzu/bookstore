@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Items to Order #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">Add Items to Order #{{ order.id }}</h1>
+        <p class="text-gray-600 mt-2">Customer: {{ order.customer }}</p>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-800">Order Summary</h2>
+            <span class="text-2xl font-bold text-indigo-600">${{ order.total_amount }}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+            <div>
+                <p>Order Date: {{ order.created_at|date:"F j, Y, g:i a" }}</p>
+                <p>Items Count: {{ items.count }}</p>
+            </div>
+            <div class="text-right">
+                <p>Customer Email: {{ order.customer.email }}</p>
+                <p>Customer Phone: {{ order.customer.phone }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Item Form -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8" x-data="{ submitting: false }">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Add New Item</h2>
+        <form method="post" @submit="submitting = true">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                {% for error in form.non_field_errors %}
+                <p class="text-red-600">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="{{ form.book.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Book
+                    </label>
+                    {{ form.book }}
+                    {% if form.book.errors %}
+                    <div class="mt-1 text-red-600 text-sm">
+                        {% for error in form.book.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="{{ form.quantity.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Quantity
+                    </label>
+                    {{ form.quantity }}
+                    {% if form.quantity.errors %}
+                    <div class="mt-1 text-red-600 text-sm">
+                        {% for error in form.quantity.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="{{ form.price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                        Price
+                    </label>
+                    {{ form.price }}
+                    {% if form.price.errors %}
+                    <div class="mt-1 text-red-600 text-sm">
+                        {% for error in form.price.errors %}
+                        <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mt-4 flex justify-end">
+                <button 
+                    type="submit" 
+                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300 flex items-center"
+                    :disabled="submitting"
+                >
+                    <span x-show="!submitting">Add Item</span>
+                    <span x-show="submitting" class="flex items-center">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Processing...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Existing Items List -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-800">Order Items</h2>
+        </div>
+        
+        {% if items %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Book</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for item in items %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                {% if item.book.cover_photo %}
+                                <img class="h-10 w-10 rounded-full object-cover mr-3" src="{{ item.book.cover_photo.url }}" alt="{{ item.book.title }}">
+                                {% endif %}
+                                <div class="text-sm font-medium text-gray-900">{{ item.book.title }}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ item.quantity }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${{ item.price }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${{ item.total_price }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <form method="post" action="{% url 'remove_order_item' item.id %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="text-red-600 hover:text-red-900">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-6 text-center text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <p>No items in this order yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="mt-6 flex justify-between">
+        <a href="{% url 'order_list' %}" class="text-indigo-600 hover:text-indigo-800">
+            Back to Orders
+        </a>
+        {% if items %}
+        <a href="{% url 'order_detail' order.id %}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-300">
+            Complete Order
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if messages %}
+<div class="fixed bottom-0 right-0 m-6" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)">
+    {% for message in messages %}
+    <div class="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
