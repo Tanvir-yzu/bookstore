@@ -1,8 +1,7 @@
+# bookstore/requirements.txt
 asgiref==3.8.1
 Django==5.2.1
 pillow==11.2.1
 sqlparse==0.5.3
 tzdata==2025.2
-gunicorn==21.2.0  # WSGI server for production
-whitenoise==6.5.0  # Serve static files
-psycopg2-binary==2.9.9  # For PostgreSQL (if using Render's managed database)
+psycopg2-binary==2.9.9  # Add this line (latest stable version)
